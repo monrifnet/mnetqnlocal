@@ -2,8 +2,9 @@
 
 define('MNETQNLOCAL_GITTOKEN', 'feddc4a4ff0de9c211e58800c3d92c3be7baba00');
 define('MNETQNLOCAL_GITAPI', 'https://api.github.com/repos/monrifnet/mnetqnlocal/git/refs/heads/master');
-define('MNETQNLOCAL_GITPULL', 'https://github.com/monrifnet/mnetqnlocal/archive/%s.zip');
-define('MNETQNLOCAL_ZIP', MNETQNLOCAL_RES_DIR . 'repo.zip');
+define('MNETQNLOCAL_GITPULLSSL', 'https://github.com/monrifnet/mnetqnlocal/archive/%s.zip');
+define('MNETQNLOCAL_GITPULL', 'http://github.com/monrifnet/mnetqnlocal/archive/%s.zip');
+define('MNETQNLOCAL_ZIP', rtrim(MNETQNLOCAL_DIR, '/') . '-%s.zip');
 define('MNETQNLOCAL_GITVER', 'mnetqnlocal_current_git_commit');
 define('MNETQNLOCAL_NEXTVER', 'mnetqnlocal_next_git_commit');
 define('MNETQNLOCAL_GITCHECK', 'mnetqnlocal_latest_git_check');
@@ -126,6 +127,15 @@ function mnetqnlocal_admin_latest_commit() {
     return $code;
 }
 
+function mnetqnlocal_rrmdir($dir) {
+    if (is_dir($dir)) {
+        array_map('mnetqnlocal_rrmdir', glob($dir . "/*"));
+        rmdir($dir);
+    } elseif (is_file($dir)) {
+        unlink($dir);
+    }
+}
+
 /*
  * mnetqnlocal_admin_update_from_git
  * tries to update the plugin via git
@@ -135,18 +145,25 @@ function mnetqnlocal_admin_update_from_git() {
     $sha = get_site_option(MNETQNLOCAL_NEXTVER, '');
     if (!$sha) return FALSE;
     $updated = FALSE;
-    $git_url = sprintf(MNETQNLOCAL_GITPULL, $sha);
-    $git_zip = fopen($git_url, 'r');
-    $archive_zip = fopen(MNETQNLOCAL_ZIP, 'rw');
-    $copied = stream_copy_to_stream($git_zip, $archive_zip);
+    $copied = FALSE;
+    $git_url = sprintf(MNETQNLOCAL_GITPULLSSL, $sha);
+    $git_zip = @fopen($git_url, 'r');
+    if (!$git_zip) return FALSE;
+    $zip_path = sprintf(MNETQNLOCAL_ZIP, $sha);
+    $archive_zip = @fopen($zip_path, 'w+');
+    if ($archive_zip) {
+        $copied = stream_copy_to_stream($git_zip, $archive_zip);
+        fclose($archive_zip);
+    }
     fclose($git_zip);
     if ($copied) {
         $zip = new ZipArchive();
-        if ($zip->open($archive_zip) === TRUE) {
+        if ($zip->open($zip_path) === TRUE) {
             try {
                 $plugdir = rtrim(MNETQNLOCAL_DIR, '/');
                 $subdir = dirname($plugdir) . "/mnetqnlocal-{$sha}";
                 $zip->extractTo(dirname($plugdir));
+                if (is_dir($plugdir)) mnetqnlocal_rrmdir($plugdir);
                 $updated = rename($subdir, $plugdir);
             } catch(Exception $e) {
                 // it's ok babe
@@ -154,7 +171,7 @@ function mnetqnlocal_admin_update_from_git() {
             $zip->close();
         }
     }
-    fclose($archive_zip);
+    @unlink($zip_path);
     if ($updated) {
         update_site_option(MNETQNLOCAL_GITVER, $sha);
     }
@@ -166,27 +183,44 @@ function mnetqnlocal_admin_page() {
         echo "<p>Eh no.</p>";
         return;
     }
+    $autoupdate = get_site_option(MNETQNLOCAL_OPT_AUTOUPDATE, FALSE);
+    $updatefreq = max(60, (int)get_site_option(MNETQNLOCAL_OPT_UPDATEFREQ, 0));
     if (isset($_POST['mql'])) {
-        $autoupdate = @$_POST['mql']['autoupdate'] == "1";
-        $updatefreq = max(60, (int)@$_POST['mql']['updatefreq']);
-        if (update_site_option(MNETQNLOCAL_OPT_AUTOUPDATE, $autoupdate)
-            && update_site_option(MNETQNLOCAL_OPT_UPDATEFREQ, $updatefreq)) {
+        $autoupdate_p = @$_POST['mql']['autoupdate'] == "1";
+        $updatefreq_p = max(60, (int)@$_POST['mql']['updatefreq']);
+        $had_to_update = 0;
+        $updated = 0;
+        if ($autoupdate !== $autoupdate_p) {
+            $had_to_update++;
+            if (update_site_option(MNETQNLOCAL_OPT_AUTOUPDATE, $autoupdate_p)) {
+                $updated++;
+                $autoupdate = $autoupdate_p;
+            }
+        }
+        if ($updatefreq !== $updatefreq_p) {
+            $had_to_update++;
+            if (update_site_option(MNETQNLOCAL_OPT_UPDATEFREQ, $updatefreq_p)) {
+                $updated++;
+                $updatefreq = $updatefreq_p;
+            }
+        }
+        if ($had_to_update < 1) {
+            // nessun aggiornamento
+            echo '<div class="notice notice-info"><p>Nessuna modifica da salvare nelle impostazioni.</p></div>';
+        } elseif ($updated >= $had_to_update) {
             // aggiornamento riuscito
             echo '<div class="notice notice-success"><p>Impostazioni aggiornate con successo.</p></div>';
         } else {
             // aggiornamento fallito
-            echo '<p>Si è verificato un errore.</p>';
+            echo '<div class="notice notice-error"><p>Si è verificato un errore nel salvataggio delle impostazioni.</p></div>';
             return;
         }
-    } else {
-        $autoupdate = get_site_option(MNETQNLOCAL_OPT_AUTOUPDATE, FALSE);
-        $updatefreq = max(60, get_site_option(MNETQNLOCAL_OPT_UPDATEFREQ, 0));
     }
     $latest_commit = get_site_option(MNETQNLOCAL_NEXTVER, '');
     $current_commit = get_site_option(MNETQNLOCAL_GITVER, '');
     $to_upgrade = $latest_commit && $current_commit != $latest_commit;
     $manually_upgrade = FALSE;
-    $update_zip_url = sprintf(MNETQNLOCAL_GITPULL, $latest_commit);
+    $update_zip_url = sprintf(MNETQNLOCAL_GITPULLSSL, $latest_commit);
     if ($to_upgrade && @$_POST['mql_update'] == 'Yass.') {
         $manually_upgrade = TRUE;
         $update_successful = mnetqnlocal_admin_update_from_git();
