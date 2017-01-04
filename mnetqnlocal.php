@@ -13,10 +13,13 @@ la modifica e la distribuzione senza esplicito consenso
 dei fornitori.
 */
 defined('ABSPATH') or die('These violent delights have violent ends');
+
 define('MNETQNLOCAL_VER', 20170101);
 define('MNETQNLOCAL_DIR', plugin_dir_path(__FILE__));
 define('MNETQNLOCAL_RES_DIR', MNETQNLOCAL_DIR . 'res/');
 define('MNETQNLOCAL_RES_URL', plugins_url('res/', __FILE__));
+
+@include_once MNETQNLOCAL_DIR . 'admin.inc.php';
 
 global $mnetqnlocal_css, $mnetqnlocal_js;
 $mnetqnlocal_css = array(
