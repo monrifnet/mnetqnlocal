@@ -9,6 +9,7 @@ body
     left: 0
     width: 100%
     z-index: 9999
+    text-align: center
     
     *, *::before, *::after
         -webkit-box-sizing: content-box
@@ -18,7 +19,7 @@ body
     .header
         width: 100%
         height: auto
-        background-color: #FFFFFF
+        background-color: #FFF
         top: 0
         z-index: 1000
         position: relative
@@ -69,12 +70,8 @@ body
                         border-left: 1px solid #545454
             .services-nav
                 float: right
-                ul li
-                    //padding: 0 5px
-                    &:nth-child(1), &:nth-child(2)
-                        border-right: 1px solid #545454
-                    &:hover
-                        opacity: .6
+                padding-right: 5px
+                
         .header-city
             display: none
         .logo-block
@@ -141,48 +138,12 @@ body
                 border-style: solid
                 border-width: 30px 0 0 25px
                 border-color: transparent transparent transparent #D3302F
-        ul.nav
-            display: block
-            position: relative
-            /*float: left
-            left: 0
-            -webkit-transition: all .8s ease-in-out
-            -moz-transition: all .8s ease-in-out
-            -o-transition: all .8s ease-in-out
-            transition: all .8s ease-in-out
-            li
-                display: block
-                float: left
-                position: relative
-                a
-                    display: block
-                    position: relative
-                    padding: 10px
-                    margin: 0
-                    font-size: 13px
-                    font-weight: 700
-                    text-transform: uppercase
-                    letter-spacing: 1px
-                    text-decoration: none
-                    color: #4c4d4e
-                    font-family: "Lato", Helvetica, Arial, sans-serif
-                    border-top: 2px solid transparent
-                    -webkit-transition: 0.5s ease-in-out
-                    -moz-transition: 0.5s ease-in-out
-                    -ms-transition: 0.5s ease-in-out
-                    -o-transition: 0.5s ease-in-out
-                    transition: 0.5s ease-in-out
-                    &:hover, &.current
-                        border-top: 2px solid #ED303C
-                        background-color: #EFEFEF
         .clear
             clear: both
         ul
             margin: 0
             padding: 0
             line-height: 1.5
-    text-align: center
-    width: 100%
 
 /*#external-header-qn .wrapper-header-qn {
  *        max-width: 990px;
@@ -193,9 +154,6 @@ body
 @media (min-width: 767px)
     // DESKTOP ONLY
     #external-header-qn .header .top-header
-        .about-nav
-            ul li:last-child
-                border-left: 1px solid transparent
         .about-nav, .services-nav
             .dropdown
                 position: relative

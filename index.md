@@ -13,6 +13,11 @@ Plugin WordPress di [Monrif Net](http://www.monrif.net) per siti del network [Qu
 
 Mostra un mini-header in cima alle pagine del sito con link verso il resto del network.
 
+**IMPORTANTE:** nel caso si usino plugin di ottimizzazione delle risorse come _Autoptimize_,
+sarà necessario escludere _header.css_ per evitare che le modifiche non vengano ignorate
+in seguito ad un aggiornamento di questo plugin. In alternativa, ricordarsi di svuotare
+la cache delle risorse ottimizzate dopo l'aggiornamento di questo plugin.
+
 <a name="config"></a>
 
 ### Aggiornamento e configurazione
