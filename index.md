@@ -8,11 +8,13 @@ Plugin WordPress di [Monrif Net](http://www.monrif.net) per siti del network [Qu
 - [Aggiornamento e configurazione](#config)
 
 <a name="netheader"></a>
+
 ### Header network
 
 Mostra un mini-header in cima alle pagine del sito con link verso il resto del network.
 
 <a name="config"></a>
+
 ### Aggiornamento e configurazione
 
 #### Aggiornamento del plugin via pannello wp-admin
