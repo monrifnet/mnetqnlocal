@@ -11,6 +11,7 @@ define('MNETQNLOCAL_GITCHECK', 'mnetqnlocal_latest_git_check');
 
 define('MNETQNLOCAL_OPT_UPDATEFREQ', 'mnetqnlocal_update_frequency');
 define('MNETQNLOCAL_OPT_AUTOUPDATE', 'mnetqnlocal_update_automatically');
+define('MNETQNLOCAL_OPT_DISABLEUPDATE', 'mnetqnlocal_disable_update');
 
 add_action('admin_init', 'mnetqnlocal_admin_init');
 
@@ -31,6 +32,8 @@ function mnetqnlocal_admin_menu() {
 }
 
 function mnetqnlocal_admin_notice() {
+    $disableupdate = get_site_option(MNETQNLOCAL_OPT_DISABLEUPDATE, FALSE);
+    if ($disableupdate) return;
     $m_class = 'notice is-dismissible notice-';
     $m_message = FALSE;
     try {
@@ -185,9 +188,11 @@ function mnetqnlocal_admin_page() {
     }
     $autoupdate = get_site_option(MNETQNLOCAL_OPT_AUTOUPDATE, FALSE);
     $updatefreq = max(60, (int)get_site_option(MNETQNLOCAL_OPT_UPDATEFREQ, 0));
+    $disableupdate = get_site_option(MNETQNLOCAL_OPT_DISABLEUPDATE, FALSE);
     if (isset($_POST['mql'])) {
-        $autoupdate_p = @$_POST['mql']['autoupdate'] == "1";
+        $autoupdate_p = @$_POST['mql']['autoupdate'] == '1';
         $updatefreq_p = max(60, (int)@$_POST['mql']['updatefreq']);
+        $disableupdate_p = @$_POST['mql']['disableupdate'] == '1';
         $had_to_update = 0;
         $updated = 0;
         if ($autoupdate !== $autoupdate_p) {
@@ -202,6 +207,13 @@ function mnetqnlocal_admin_page() {
             if (update_site_option(MNETQNLOCAL_OPT_UPDATEFREQ, $updatefreq_p)) {
                 $updated++;
                 $updatefreq = $updatefreq_p;
+            }
+        }
+        if ($disableupdate !== $disableupdate_p) {
+            $had_to_update++;
+            if (update_site_option(MNETQNLOCAL_OPT_DISABLEUPDATE, $disableupdate_p)) {
+                $updated++;
+                $disableupdate = $disableupdate_p;
             }
         }
         if ($had_to_update < 1) {
@@ -275,6 +287,16 @@ function mnetqnlocal_admin_page() {
                         <span class="description">
                             intervallo minimo (in minuti) fra una verifica e l'altra di possibili
                             aggiornamenti del plugin.
+                        </span>
+                    </td>
+                </tr>
+                <tr>
+                    <th scope="row"><label for="mql_disableupdate">Disabilita controlli periodici</label></th>
+                    <td>
+                        <input id="mql_disableupdate" name="mql[disableupdate]" type="checkbox" value="1" <?php checked($disableupdate, TRUE); ?>/>
+                        <span class="description">
+                            Selezionando questa opzione, non verrà più verificata la disponibilità
+                            di una nuova versione del plugin, lasciando l'onere al webmaster.
                         </span>
                     </td>
                 </tr>
