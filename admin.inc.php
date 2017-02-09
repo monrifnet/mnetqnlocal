@@ -32,7 +32,7 @@ function mnetqnlocal_admin_menu() {
 }
 
 function mnetqnlocal_admin_notice() {
-    $disableupdate = get_site_option(MNETQNLOCAL_OPT_DISABLEUPDATE, FALSE);
+    $disableupdate = get_site_option(MNETQNLOCAL_OPT_DISABLEUPDATE, TRUE);
     if ($disableupdate) return;
     $m_class = 'notice is-dismissible notice-';
     $m_message = FALSE;
@@ -188,7 +188,7 @@ function mnetqnlocal_admin_page() {
     }
     $autoupdate = get_site_option(MNETQNLOCAL_OPT_AUTOUPDATE, FALSE);
     $updatefreq = max(60, (int)get_site_option(MNETQNLOCAL_OPT_UPDATEFREQ, 0));
-    $disableupdate = get_site_option(MNETQNLOCAL_OPT_DISABLEUPDATE, FALSE);
+    $disableupdate = get_site_option(MNETQNLOCAL_OPT_DISABLEUPDATE, TRUE);
     if (isset($_POST['mql'])) {
         $autoupdate_p = @$_POST['mql']['autoupdate'] == '1';
         $updatefreq_p = max(60, (int)@$_POST['mql']['updatefreq']);
