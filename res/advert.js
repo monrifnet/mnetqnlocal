@@ -1,0 +1,1 @@
+document.write('<meta id="advtester" name="advertisement_testing" content="it is a test" />');
