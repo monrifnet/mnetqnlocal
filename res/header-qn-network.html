@@ -117,9 +117,25 @@
 </div> <!-- /Header Network QN -->
 <script type="text/javascript">
   (function(){
-    // moves the header far up in the page
     var header = document.getElementById('external-header-qn');
     if (!header) return;
-    document.body.insertBefore(header, document.body.firstChild);
+    try {
+        // moves the header far up in the page
+        document.body.insertBefore(header, document.body.firstChild);
+    } catch (e) {
+        // if something had gone wrong already, issue order 66
+        header.parentNode.removeChild(header);
+    }
+    // slides the header up if it's absolute
+    if (typeof getComputedStyle == "function") {
+        var headerPos = getComputedStyle(header).position;
+        var bodyMargin = 0;
+        try {
+            bodyMargin = parseFloat(getComputedStyle(document.body).marginTop);
+        } catch (e) {}
+        if (headerPos == "absolute" && bodyMargin) {
+            header.style.top = "-" + bodyMargin + "px";
+        }
+    }
   })();
 </script>
