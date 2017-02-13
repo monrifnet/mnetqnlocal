@@ -26,6 +26,20 @@ NAB_is_blocked = function() {
     return document.getElementById("advtester") == undefined;
 }
 </script>
+<?php
+    $webtrekk_page_type = "home";
+    $webtrekk_keywords = "";
+    if (is_singular()) {
+        $webtrekk_page_type = "articolo";
+        $the_tags = array();
+        foreach (get_the_tags() as $tag) {
+            $the_tags []= $tag->name;
+        }
+        $webtrekk_keywords = implode(",", $the_tags);
+    } elseif (is_archive()) {
+        $webtrekk_page_type = "sezione";
+    }
+?>
 <script type="text/javascript">
 (function(){
     if (!webtrekkV3) {
@@ -108,26 +122,23 @@ NAB_is_blocked = function() {
         cg2: 'qn-local',
         cg3: getTestataFromURL(),
         cg4: getEditionFromURL() || na,
-        cg5: getFromSchemaOrg('@type') || na,
-        cg6: getFromSchemaOrg('ArticleSection') || na,
+        cg5: '<?php echo $webtrekk_page_type; ?>' || na
     }
     if ("wtk_config" in window) {
         for (var k in wtk_config) {
             config[k] = wtk_config[k];
         }
     }
-    var contentGroup = {
-        1: config.cg1,
-        2: config.cg2,
-        3: config.cg3,
-        4: config.cg4,
-        5: config.cg5,
-        6: config.cg6
+    var contentGroup = {}
+    for (var i = 1; i < 10; i++) {
+        var k = "cg" + i;
+        if (!(k in config)) break;
+        contentGroup[k] = config[k];
     }
-    var keywords = getFromSchemaOrg('keywords');
-    if (typeof keywords == "string") keywords = keywords.split(/\s*,\s*/);
-    if (keywords && keywords.length) keywords = keywords.join(',');
-    else keywords = na;
+    var keywords = '<?php echo $webtrekk_keywords; ?>';
+    //if (typeof keywords == "string") keywords = keywords.split(/\s*,\s*/);
+    //if (keywords && keywords.length) keywords = keywords.join(',');
+    //else keywords = na;
     var customParameter = {
         1  : document.title,
         2  : getExistsParameterByName('refresh_ce'),
@@ -138,7 +149,7 @@ NAB_is_blocked = function() {
         9  : NAB_is_blocked() ? 'YES' : 'NO',
         13 : keywords,
         14 : typeof window.isConsentGiven == 'function' && window.isConsentGiven() ? "YES" : "NO",
-        15 : getFromSchemaOrg('author') || na
+        15 : '<?php the_author(); ?>' || na
     }
     for (var i = 1; i <= 25; i++) if (!customParameter[i]) customParameter[i] = na;
     var wtk_config = {
