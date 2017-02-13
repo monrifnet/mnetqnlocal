@@ -29,10 +29,7 @@ NAB_is_blocked = function() {
 <?php
     $webtrekk_page_type = "home";
     $webtrekk_keywords = "";
-    $webtrekk_category = @get_the_category();
-    if ($webtrekk_category and count($webtrekk_category)) {
-        $webtrekk_category = $webtrekk_category[0]->name;
-    }
+    $webtrekk_category = "";
     if (is_singular()) {
         $webtrekk_page_type = "articolo";
         $the_tags = array();
@@ -40,6 +37,12 @@ NAB_is_blocked = function() {
             $the_tags []= $tag->name;
         }
         $webtrekk_keywords = implode(",", $the_tags);
+        $webtrekk_category = @get_the_category();
+        if ($webtrekk_category and count($webtrekk_category)) {
+            $webtrekk_category = $webtrekk_category[0]->name;
+        } else {
+            $webtrekk_category = "";
+        }
     } elseif (is_archive()) {
         $webtrekk_page_type = "sezione";
     }
@@ -121,24 +124,35 @@ NAB_is_blocked = function() {
         return "no_content";
     }
     var na = 'na';
-    var config = {
-        cg1: 'Aggregato Monrif',
-        cg2: 'qn-local',
-        cg3: getTestataFromURL(),
-        cg4: getEditionFromURL() || na,
-        cg5: '<?php echo $webtrekk_page_type; ?>' || na,
-        cg6: '<?php echo $webtrekk_category; ?>' || na
+    var typeFromSchema = "home-sezione";
+    switch (getFromSchemaOrg('@type')) {
+        case "NewsArticle":
+            typeFromSchema = "articolo";
+            break;
+        case "ImageGallery":
+            typeFromSchema = "foto";
+            break;
+        case "VideoObject":
+            typeFromSchema = "video";
+            break;
     }
-    if ("wtk_config" in window) {
-        for (var k in wtk_config) {
-            config[k] = wtk_config[k];
+    var config = {
+        1: 'Aggregato Monrif',
+        2: 'qn-local',
+        3: getTestataFromURL(),
+        4: getEditionFromURL() || na,
+        5: typeFromSchema || na,
+        6: '<?php echo $webtrekk_category; ?>' || na
+    }
+    if ("wtk_cg" in window) {
+        for (var k in wtk_cg) {
+            config[k] = wtk_cg[k];
         }
     }
     var contentGroup = {}
     for (var i = 1; i < 10; i++) {
-        var k = "cg" + i;
-        if (!(k in config)) break;
-        contentGroup[k] = config[k];
+        if (!(i in config)) break;
+        contentGroup[i] = config[i];
     }
     var keywords = '<?php echo $webtrekk_keywords; ?>';
     //if (typeof keywords == "string") keywords = keywords.split(/\s*,\s*/);
@@ -147,14 +161,19 @@ NAB_is_blocked = function() {
     var customParameter = {
         1  : document.title,
         2  : getExistsParameterByName('refresh_ce'),
-        3  : config.cp6,
+        3  : contentGroup[6] || na,
         4  : 'external.site.leccenews24', // or 'internal.site.qn'
         //5  : 'internal.page.qn.motori',
-        7  : config.cp5,
+        7  : contentGroup[5] || na,
         9  : NAB_is_blocked() ? 'YES' : 'NO',
         13 : keywords,
         14 : typeof window.isConsentGiven == 'function' && window.isConsentGiven() ? "YES" : "NO",
         15 : '<?php the_author(); ?>' || na
+    }
+    if ("wtk_cp" in window) {
+        for (var k in wtk_cp) {
+            customParameter[k] = wtk_cp[k];
+        }
     }
     for (var i = 1; i <= 25; i++) if (!customParameter[i]) customParameter[i] = na;
     var wtk_config = {
@@ -164,6 +183,8 @@ NAB_is_blocked = function() {
        contentId : getContentIdByURL()
     }
     var tracker = new webtrekkV3(wtk_config);
+    console.log('webtrekk contentGroup is', contentGroup);
+    console.log('webtrekk customParameter is', customParameter);
     tracker.contentGroup = contentGroup;
     tracker.customParameter = customParameter;
     tracker.ignorePrerendering = 'true';
