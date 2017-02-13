@@ -29,6 +29,10 @@ NAB_is_blocked = function() {
 <?php
     $webtrekk_page_type = "home";
     $webtrekk_keywords = "";
+    $webtrekk_category = @get_the_category();
+    if ($webtrekk_category and count($webtrekk_category)) {
+        $webtrekk_category = $webtrekk_category[0]->name;
+    }
     if (is_singular()) {
         $webtrekk_page_type = "articolo";
         $the_tags = array();
@@ -122,7 +126,8 @@ NAB_is_blocked = function() {
         cg2: 'qn-local',
         cg3: getTestataFromURL(),
         cg4: getEditionFromURL() || na,
-        cg5: '<?php echo $webtrekk_page_type; ?>' || na
+        cg5: '<?php echo $webtrekk_page_type; ?>' || na,
+        cg6: '<?php echo $webtrekk_category; ?>' || na
     }
     if ("wtk_config" in window) {
         for (var k in wtk_config) {
