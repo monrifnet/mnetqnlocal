@@ -135,15 +135,12 @@
         var headerH = header.offsetHeight;
         var bodyMargin = 0;
         try {
-            bodyMargin = parseFloat(getComputedStyle(document.body).marginTop);
+            bodyMargin = parseFloat(getComputedStyle(document.body).paddingTop);
         } catch (e) {}
         if (headerH > bodyMargin) {
-            document.body.style.marginTop = headerH + "px";
+            document.body.style.paddingTop = headerH + "px";
             bodyMargin = headerH;
         }
-        //if (headerPos == "absolute" && bodyMargin) {
-        //    header.style.top = "-" + bodyMargin + "px";
-        //}
     }
   })();
 </script>
