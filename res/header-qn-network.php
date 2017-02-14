@@ -1,5 +1,8 @@
+<?php
+    $mql_fixedheader = get_site_option(MNETQNLOCAL_OPT_FIXEDHEADER, FALSE);
+?>
 <!-- Header Network QN -->
-<div id="external-header-qn">
+<div id="external-header-qn" class="<?php echo $mql_fixedheader ? 'fixed' : 'static'; ?>">
   <div class="wrapper-header-qn">
     <!-- Head: Branding & Nav -->
     <div class="header">
@@ -129,13 +132,18 @@
     // slides the header up if it's absolute
     if (typeof getComputedStyle == "function") {
         var headerPos = getComputedStyle(header).position;
+        var headerH = header.offsetHeight;
         var bodyMargin = 0;
         try {
             bodyMargin = parseFloat(getComputedStyle(document.body).marginTop);
         } catch (e) {}
-        if (headerPos == "absolute" && bodyMargin) {
-            header.style.top = "-" + bodyMargin + "px";
+        if (headerH > bodyMargin) {
+            document.body.style.marginTop = headerH + "px";
+            bodyMargin = headerH;
         }
+        //if (headerPos == "absolute" && bodyMargin) {
+        //    header.style.top = "-" + bodyMargin + "px";
+        //}
     }
   })();
 </script>

@@ -46,6 +46,6 @@ function mnetqnlocal_cssjs() {
 
 add_action('wp_footer', 'mnetqnlocal_footer');
 function mnetqnlocal_footer() {
-    @include_once MNETQNLOCAL_RES_DIR . 'header-qn-network.html';
+    @include_once MNETQNLOCAL_RES_DIR . 'header-qn-network.php';
     @include_once MNETQNLOCAL_RES_DIR . 'wp-mnetlocal-wtk-widget.php';
 }

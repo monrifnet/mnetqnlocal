@@ -12,6 +12,7 @@ define('MNETQNLOCAL_GITCHECK', 'mnetqnlocal_latest_git_check');
 define('MNETQNLOCAL_OPT_UPDATEFREQ', 'mnetqnlocal_update_frequency');
 define('MNETQNLOCAL_OPT_AUTOUPDATE', 'mnetqnlocal_update_automatically');
 define('MNETQNLOCAL_OPT_DISABLEUPDATE', 'mnetqnlocal_disable_update');
+define('MNETQNLOCAL_OPT_FIXEDHEADER', 'mnetqnlocal_fixed_header');
 
 add_action('admin_init', 'mnetqnlocal_admin_init');
 
@@ -189,14 +190,19 @@ function mnetqnlocal_admin_page() {
     $autoupdate = get_site_option(MNETQNLOCAL_OPT_AUTOUPDATE, FALSE);
     $updatefreq = max(60, (int)get_site_option(MNETQNLOCAL_OPT_UPDATEFREQ, 0));
     $disableupdate = get_site_option(MNETQNLOCAL_OPT_DISABLEUPDATE, TRUE);
+    $fixedheader = get_site_option(MNETQNLOCAL_OPT_FIXEDHEADER, FALSE);
     if (isset($_POST['mql'])) {
         $autoupdate_p = @$_POST['mql']['autoupdate'] == '1';
         $updatefreq_p = max(60, (int)@$_POST['mql']['updatefreq']);
         $disableupdate_p = @$_POST['mql']['disableupdate'] == '1';
+        $fixedheader_p = @$_POST['mql']['fixedheader'] == '1';
         $had_to_update = 0;
         $updated = 0;
         if ($autoupdate !== $autoupdate_p) {
             $had_to_update++;
+            if ($autoupdate == $autoupdate_p) {
+                delete_site_option(MNETQNLOCAL_OPT_AUTOUPDATE);
+            }
             if (update_site_option(MNETQNLOCAL_OPT_AUTOUPDATE, $autoupdate_p)) {
                 $updated++;
                 $autoupdate = $autoupdate_p;
@@ -204,6 +210,9 @@ function mnetqnlocal_admin_page() {
         }
         if ($updatefreq !== $updatefreq_p) {
             $had_to_update++;
+            if ($updatefreq == $updatefreq_p) {
+                delete_site_option(MNETQNLOCAL_OPT_UPDATEFREQ);
+            }
             if (update_site_option(MNETQNLOCAL_OPT_UPDATEFREQ, $updatefreq_p)) {
                 $updated++;
                 $updatefreq = $updatefreq_p;
@@ -211,9 +220,22 @@ function mnetqnlocal_admin_page() {
         }
         if ($disableupdate !== $disableupdate_p) {
             $had_to_update++;
+            if ($disableupdate == $disableupdate_p) {
+                delete_site_option(MNETQNLOCAL_OPT_DISABLEUPDATE);
+            }
             if (update_site_option(MNETQNLOCAL_OPT_DISABLEUPDATE, $disableupdate_p)) {
                 $updated++;
                 $disableupdate = $disableupdate_p;
+            }
+        }
+        if ($fixedheader !== $fixedheader_p) {
+            $had_to_update++;
+            if ($fixedheader == $fixedheader_p) {
+                delete_site_option(MNETQNLOCAL_OPT_FIXEDHEADER);
+            }
+            if (update_site_option(MNETQNLOCAL_OPT_FIXEDHEADER, $fixedheader_p)) {
+                $updated++;
+                $fixedheader = $fixedheader_p;
             }
         }
         if ($had_to_update < 1) {
@@ -297,6 +319,21 @@ function mnetqnlocal_admin_page() {
                         <span class="description">
                             Selezionando questa opzione, non verrà più verificata la disponibilità
                             di una nuova versione del plugin, lasciando l'onere al webmaster.
+                        </span>
+                    </td>
+                </tr>
+              </tbody>
+            </table>
+            <h2 class="title">Impostazioni network Q.Net</h2>
+            <table class="form-table">
+              <tbody>
+                <tr>
+                    <th scope="row"><label for="mql_fixedheader">Mini-header fisso</label></th>
+                    <td>
+                        <input id="mql_fixedheader" name="mql[fixedheader]" type="checkbox" value="1" <?php checked($fixedheader, TRUE); ?>/>
+                        <span class="description">
+                            Selezionando questa opzione, il mini-header del network QN
+                            assumerà posizione fixed e sarà sempre visibile in cima alla pagina.
                         </span>
                     </td>
                 </tr>
