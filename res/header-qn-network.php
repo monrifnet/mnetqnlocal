@@ -30,10 +30,12 @@
                             <a href="http://www.lanazione.it/" title="La Nazione" rel="nofollow">La Nazione</a>
                             <a href="http://www.ilgiorno.it/" title="Il Giorno" rel="nofollow">Il Giorno</a>
                             <a href="http://www.cavallomagazine.it/" title="Cavallo Magazine" rel="nofollow">Cavallo Magazine</a>
+                            <a href="http://www.drivemag.it/" title="DriveMag" rel="nofollow">DriveMag</a>
                             <a href="http://www.hwupgrade.it/" title="Hardware Upgrade" rel="nofollow">Hardware Upgrade</a>
                             <a href="http://pinkitalia.it/" title="Pinkitalia" rel="nofollow">Pinkitalia</a>
                             <a href="http://www.prontoimprese.it/" title="Pronto Imprese" rel="nofollow">Pronto Imprese</a>
                             <a href="http://www.ubitennis.com/" title="Ubitennis" rel="nofollow">Ubitennis</a>
+                            <a href="http://www.atletispeciali.com/" title="Atleti Speciali" rel="nofollow">Atleti Speciali</a>
                         </div>
                     </li>
                     <li class="dropdown">

@@ -168,7 +168,8 @@ NAB_is_blocked = function() {
         9  : NAB_is_blocked() ? 'YES' : 'NO',
         13 : keywords,
         14 : typeof window.isConsentGiven == 'function' && window.isConsentGiven() ? "YES" : "NO",
-        15 : '<?php the_author(); ?>' || na
+        15 : '<?php the_author(); ?>' || na,
+        16 : '<?php the_author_meta("login"); ?>' || na
     }
     if ("wtk_cp" in window) {
         for (var k in wtk_cp) {
