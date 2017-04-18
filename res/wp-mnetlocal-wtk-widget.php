@@ -169,7 +169,7 @@ NAB_is_blocked = function() {
         13 : keywords,
         14 : typeof window.isConsentGiven == 'function' && window.isConsentGiven() ? "YES" : "NO",
         15 : '<?php the_author(); ?>' || na,
-        16 : '<?php the_author_meta("ID"); ?>' || na
+        //16 : '<?php the_author_meta("ID"); ?>' || na
     }
     if ("wtk_cp" in window) {
         for (var k in wtk_cp) {

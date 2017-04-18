@@ -14,7 +14,7 @@ dei fornitori.
 */
 defined('ABSPATH') or die('These violent delights have violent ends');
 
-define('MNETQNLOCAL_VER', 20170209);
+define('MNETQNLOCAL_VER', 20170418);
 define('MNETQNLOCAL_DIR', plugin_dir_path(__FILE__));
 define('MNETQNLOCAL_RES_DIR', MNETQNLOCAL_DIR . 'res/');
 define('MNETQNLOCAL_RES_URL', plugins_url('res/', __FILE__));
