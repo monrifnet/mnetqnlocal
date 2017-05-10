@@ -162,8 +162,7 @@ NAB_is_blocked = function() {
         1  : document.title,
         2  : getExistsParameterByName('refresh_ce'),
         3  : contentGroup[6] || na,
-        4  : 'external.site.leccenews24', // or 'internal.site.qn'
-        //5  : 'internal.page.qn.motori',
+        4  : 'external.site.qnlocal',
         7  : contentGroup[5] || na,
         9  : NAB_is_blocked() ? 'YES' : 'NO',
         13 : keywords,
