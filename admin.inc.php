@@ -1,25 +1,8 @@
 <?php
 
-define('MNETQNLOCAL_GITTOKEN', 'feddc4a4ff0de9c211e58800c3d92c3be7baba00');
-define('MNETQNLOCAL_GITAPI', 'https://api.github.com/repos/monrifnet/mnetqnlocal/git/refs/heads/master');
-define('MNETQNLOCAL_GITPULLSSL', 'https://github.com/monrifnet/mnetqnlocal/archive/%s.zip');
-define('MNETQNLOCAL_GITPULL', 'http://github.com/monrifnet/mnetqnlocal/archive/%s.zip');
-define('MNETQNLOCAL_ZIP', rtrim(MNETQNLOCAL_DIR, '/') . '-%s.zip');
-define('MNETQNLOCAL_GITVER', 'mnetqnlocal_current_git_commit');
-define('MNETQNLOCAL_NEXTVER', 'mnetqnlocal_next_git_commit');
-define('MNETQNLOCAL_GITCHECK', 'mnetqnlocal_latest_git_check');
-
-define('MNETQNLOCAL_OPT_UPDATEFREQ', 'mnetqnlocal_update_frequency');
-define('MNETQNLOCAL_OPT_AUTOUPDATE', 'mnetqnlocal_update_automatically');
-define('MNETQNLOCAL_OPT_DISABLEUPDATE', 'mnetqnlocal_disable_update');
 define('MNETQNLOCAL_OPT_FIXEDHEADER', 'mnetqnlocal_fixed_header');
-
-add_action('admin_init', 'mnetqnlocal_admin_init');
-
-function mnetqnlocal_admin_init() {
-    if (!current_user_can('update_plugins')) return;
-    add_action('all_admin_notices', 'mnetqnlocal_admin_notice');
-}
+define('MNETQNLOCAL_OPT_FULLURLEDIT', 'mnetqnlocal_fullurl_edit');
+define('MNETQNLOCAL_OPT_OVERRIDE_WTK', 'mnetqnlocal_override_webtrekk');
 
 add_action('admin_menu', 'mnetqnlocal_admin_menu');
 function mnetqnlocal_admin_menu() {
@@ -32,154 +15,38 @@ function mnetqnlocal_admin_menu() {
         );
 }
 
-function mnetqnlocal_admin_notice() {
-    $disableupdate = get_site_option(MNETQNLOCAL_OPT_DISABLEUPDATE, TRUE);
-    if ($disableupdate) return;
-    $m_class = 'notice is-dismissible notice-';
-    $m_message = FALSE;
+/*
+ * mnetqnlocal_get_curl
+ * created by Paul long ago
+ * performs a CURL w/ headers
+ * and returns status + response
+ */
+function mnetqnlocal_get_curl($url, $return = TRUE, $custom_opts = array()) {
     try {
-        switch (mnetqnlocal_admin_latest_commit()) {
-            case 0:
-                $m_class .= 'warning';
-                $m_message = 'impossibile collegarsi a git per verificare la versione.';
-                break;
-            case 1:
-                // no message: plugin is updated
-                break;
-            case 2:
-                $m_class .= 'info';
-                $m_message = 'una nuova versione è disponibile al download. Si prega di aggiornare il plugin.';
-                break;
-            case 3:
-                $m_class .= 'error';
-                $m_message = 'si è verificato un errore durante l\'aggiornamento automatico del plugin.';
-                break;
-            case 4:
-                $m_class .= 'warning';
-                $m_message = 'il plugin è stato aggiornato automaticamente.';
-                break;
+        $get = curl_init($url);
+        curl_setopt($get, CURLOPT_CONNECTTIMEOUT, 20);
+        curl_setopt($get, CURLOPT_FOLLOWLOCATION, TRUE);
+        curl_setopt($get, CURLOPT_MAXREDIRS, 2);
+        curl_setopt($get, CURLOPT_SSL_VERIFYPEER, FALSE);
+        foreach($custom_opts as $opt => $val) {
+            curl_setopt($get, $opt, $val);
         }
-    } catch(Exception $e) {
-        $m_class .= 'error';
-        $m_message = 'si è verificato un errore: ' . $e->getMessage();
-    }
-    if ($m_message) {
-        printf('<div class="%s"><p>MonrifNet Q.Net Local: %s</p></div>', $m_class, $m_message);
-    }
-}
-
-/*
- * mnetqnlocal_admin_latest_commit
- * checks for new commits on the git repo
- * and returns a status code or an Exception:
- * 0 - Error connecting to git api
- * 1 - Current version is the latest
- * 2 - New version available (no auto-update)
- * 3 - Couldn't auto-update from git
- * 4 - Audo-update from git successful!
- */
-function mnetqnlocal_admin_latest_commit() {
-    $latest_check = (int)get_site_option(MNETQNLOCAL_GITCHECK, 0);
-    $update_freq = max(60, (int)get_site_option(MNETQNLOCAL_OPT_UPDATEFREQ, 0));
-    // needs 1 hour at least to check again the GIT version
-    $code = 0;
-    $latest_commit = FALSE;
-    if ($latest_check < time() - $update_freq * 60) {
-        $git = curl_init(MNETQNLOCAL_GITAPI);
-        curl_setopt($git, CURLOPT_CONNECTTIMEOUT, 20);
-        curl_setopt($git, CURLOPT_FOLLOWLOCATION, TRUE);
-        curl_setopt($git, CURLOPT_MAXREDIRS, 2);
-        curl_setopt($git, CURLOPT_RETURNTRANSFER, TRUE);
-        curl_setopt($git, CURLOPT_SSL_VERIFYPEER, FALSE);
-        curl_setopt($git, CURLOPT_HTTPHEADER, array(
-                                'Authorization: token ' . MNETQNLOCAL_GITTOKEN,
-                                'User-Agent: Monrifnet-Qnet-Local',
-                            ));
-        $commit = curl_exec($git);
-        $http_code = curl_getinfo($git, CURLINFO_HTTP_CODE);
-        curl_close($git);
-        if ($commit && $http_code == 200) {
-            $json = json_decode($commit, TRUE);
-            $latest_commit = @$json["object"]["sha"];
-            if ($latest_commit) {
-                update_site_option(MNETQNLOCAL_GITCHECK, time());
-                update_site_option(MNETQNLOCAL_NEXTVER, $latest_commit);
-            }
+        if ($return) {
+            curl_setopt($get, CURLOPT_RETURNTRANSFER, TRUE);
         }
-    } else {
-        $latest_commit = get_site_option(MNETQNLOCAL_NEXTVER, '');
-    }
-    if ($latest_commit) {
-        $current_commit = get_site_option(MNETQNLOCAL_GITVER, '');
-        if ($current_commit != $latest_commit) {
-            if (get_site_option(MNETQNLOCAL_OPT_AUTOUPDATE, FALSE)) {
-                $update_from_git = mnetqnlocal_admin_update_from_git();
-                if ($update_from_git) {
-                    // updated from git
-                    $code = 4;
-                } else {
-                    // could not update from git
-                    $code = 3;
-                }
-            } else {
-                $code = 2;
-            }
-        } else {
-            $code = 1;
+        $payload = curl_exec($get);
+        $http_code = curl_getinfo($get, CURLINFO_HTTP_CODE);
+        curl_close($get);
+        if ($return) {
+            return array(
+                    "payload" => $payload,
+                    "status" => $http_code,
+                );
         }
+        return true;
+    } catch (Exception $e) {
+        return false;
     }
-    return $code;
-}
-
-function mnetqnlocal_rrmdir($dir) {
-    if (is_dir($dir)) {
-        array_map('mnetqnlocal_rrmdir', glob($dir . "/*"));
-        rmdir($dir);
-    } elseif (is_file($dir)) {
-        unlink($dir);
-    }
-}
-
-/*
- * mnetqnlocal_admin_update_from_git
- * tries to update the plugin via git
- */
-function mnetqnlocal_admin_update_from_git() {
-    if (!class_exists('ZipArchive')) return FALSE;
-    $sha = get_site_option(MNETQNLOCAL_NEXTVER, '');
-    if (!$sha) return FALSE;
-    $updated = FALSE;
-    $copied = FALSE;
-    $git_url = sprintf(MNETQNLOCAL_GITPULLSSL, $sha);
-    $git_zip = @fopen($git_url, 'r');
-    if (!$git_zip) return FALSE;
-    $zip_path = sprintf(MNETQNLOCAL_ZIP, $sha);
-    $archive_zip = @fopen($zip_path, 'w+');
-    if ($archive_zip) {
-        $copied = stream_copy_to_stream($git_zip, $archive_zip);
-        fclose($archive_zip);
-    }
-    fclose($git_zip);
-    if ($copied) {
-        $zip = new ZipArchive();
-        if ($zip->open($zip_path) === TRUE) {
-            try {
-                $plugdir = rtrim(MNETQNLOCAL_DIR, '/');
-                $subdir = dirname($plugdir) . "/mnetqnlocal-{$sha}";
-                $zip->extractTo(dirname($plugdir));
-                if (is_dir($plugdir)) mnetqnlocal_rrmdir($plugdir);
-                $updated = rename($subdir, $plugdir);
-            } catch(Exception $e) {
-                // it's ok babe
-            }
-            $zip->close();
-        }
-    }
-    @unlink($zip_path);
-    if ($updated) {
-        update_site_option(MNETQNLOCAL_GITVER, $sha);
-    }
-    return $updated;
 }
 
 function mnetqnlocal_admin_page() {
@@ -187,143 +54,55 @@ function mnetqnlocal_admin_page() {
         echo "<p>Eh no.</p>";
         return;
     }
-    $autoupdate = get_site_option(MNETQNLOCAL_OPT_AUTOUPDATE, FALSE);
-    $updatefreq = max(60, (int)get_site_option(MNETQNLOCAL_OPT_UPDATEFREQ, 0));
-    $disableupdate = get_site_option(MNETQNLOCAL_OPT_DISABLEUPDATE, TRUE);
     $fixedheader = get_site_option(MNETQNLOCAL_OPT_FIXEDHEADER, FALSE);
+    $fullurledit = get_site_option(MNETQNLOCAL_OPT_FULLURLEDIT, TRUE);
+    $override_wtk = get_site_option(MNETQNLOCAL_OPT_OVERRIDE_WTK, '');
     if (isset($_POST['mql'])) {
-        $autoupdate_p = @$_POST['mql']['autoupdate'] == '1';
-        $updatefreq_p = max(60, (int)@$_POST['mql']['updatefreq']);
-        $disableupdate_p = @$_POST['mql']['disableupdate'] == '1';
         $fixedheader_p = @$_POST['mql']['fixedheader'] == '1';
-        $had_to_update = 0;
-        $updated = 0;
-        if ($autoupdate !== $autoupdate_p) {
-            $had_to_update++;
-            if ($autoupdate == $autoupdate_p) {
-                delete_site_option(MNETQNLOCAL_OPT_AUTOUPDATE);
-            }
-            if (update_site_option(MNETQNLOCAL_OPT_AUTOUPDATE, $autoupdate_p)) {
-                $updated++;
-                $autoupdate = $autoupdate_p;
-            }
-        }
-        if ($updatefreq !== $updatefreq_p) {
-            $had_to_update++;
-            if ($updatefreq == $updatefreq_p) {
-                delete_site_option(MNETQNLOCAL_OPT_UPDATEFREQ);
-            }
-            if (update_site_option(MNETQNLOCAL_OPT_UPDATEFREQ, $updatefreq_p)) {
-                $updated++;
-                $updatefreq = $updatefreq_p;
-            }
-        }
-        if ($disableupdate !== $disableupdate_p) {
-            $had_to_update++;
-            if ($disableupdate == $disableupdate_p) {
-                delete_site_option(MNETQNLOCAL_OPT_DISABLEUPDATE);
-            }
-            if (update_site_option(MNETQNLOCAL_OPT_DISABLEUPDATE, $disableupdate_p)) {
-                $updated++;
-                $disableupdate = $disableupdate_p;
+        $fullurledit_p = @$_POST['mql']['fullurledit'] == '1';
+        $override_wtk_p = trim(@$_POST['mql']['override_wtk']);
+        $had_to_update = array();
+        $updated = array();
+        $toupdate = array(
+            "fixedheader" => MNETQNLOCAL_OPT_FIXEDHEADER,
+            "fullurledit" => MNETQNLOCAL_OPT_FULLURLEDIT,
+            "override_wtk" => MNETQNLOCAL_OPT_OVERRIDE_WTK,
+        );
+        foreach ($toupdate as $name => $option) {
+            if ($$name !== ${$name."_p"}) {
+                $had_to_update[] = "$name";
+                if ($$name == ${$name."_p"}) {
+                    delete_site_option($option);
+                }
+                $value = ${$name."_p"} === FALSE ? 0 : ${$name."_p"};
+                if (update_site_option($option, $value)) {
+                    $updated[] = "$name";
+                    $$name = ${$name."_p"};
+                }
             }
         }
-        if ($fixedheader !== $fixedheader_p) {
-            $had_to_update++;
-            if ($fixedheader == $fixedheader_p) {
-                delete_site_option(MNETQNLOCAL_OPT_FIXEDHEADER);
-            }
-            if (update_site_option(MNETQNLOCAL_OPT_FIXEDHEADER, $fixedheader_p)) {
-                $updated++;
-                $fixedheader = $fixedheader_p;
-            }
-        }
-        if ($had_to_update < 1) {
+        if (count($had_to_update) < 1) {
             // nessun aggiornamento
             echo '<div class="notice notice-info"><p>Nessuna modifica da salvare nelle impostazioni.</p></div>';
-        } elseif ($updated >= $had_to_update) {
+        } elseif (count($updated) >= count($had_to_update)) {
             // aggiornamento riuscito
             echo '<div class="notice notice-success"><p>Impostazioni aggiornate con successo.</p></div>';
         } else {
             // aggiornamento fallito
-            echo '<div class="notice notice-error"><p>Si è verificato un errore nel salvataggio delle impostazioni.</p></div>';
+            echo '<div class="notice notice-error"><p>
+                Si è verificato un errore nel salvataggio delle impostazioni.<br />
+                Opzioni aggiornate: <strong>' . implode(', ', $updated) . '</strong><br />
+                Opzioni problematiche: <strong>' . implode(', ', array_diff($had_to_update, $updated)) . '</strong><br />
+                <em><a href="">Ricarica la pagina per riprovare</a></em>
+                </p></div>';
             return;
         }
-    }
-    $latest_commit = get_site_option(MNETQNLOCAL_NEXTVER, '');
-    $current_commit = get_site_option(MNETQNLOCAL_GITVER, '');
-    $to_upgrade = $latest_commit && $current_commit != $latest_commit;
-    $manually_upgrade = FALSE;
-    $update_zip_url = sprintf(MNETQNLOCAL_GITPULLSSL, $latest_commit);
-    if ($to_upgrade && @$_POST['mql_update'] == 'Yass.') {
-        $manually_upgrade = TRUE;
-        $update_successful = mnetqnlocal_admin_update_from_git();
     }
 ?>
     <div class="wrap">
         <div id="icon-tools" class="icon32"></div>
         <h1>Monrif Net Q.Net Local Plugin Settings</h1>
-        <h2 class="title">Impostazioni aggiornamento plugin</h2>
-<?php
-        if (isset($update_successful)) {
-            $m_class = $update_successful ? 'success' : 'error';
-            $m_message = 'L\'aggiornamento del plugin ' . ($update_successful ? '' : 'non ') . 'ha avuto successo.';
-            printf('<div class="notice is-dismissible notice-%s"><p>%s</p></div>', $m_class, $m_message);
-        } elseif ($to_upgrade) {
-?>
         <form method="post">
-            <table class="form-table">
-              <tbody>
-                <tr>
-                    <th scope="row"><label>Aggiornamento disponibile!</label></th>
-                    <td>
-                        <button id="mql_update" name="mql_update" class="button" type="submit" value="Yass.">
-                            Aggiorna manualmente
-                        </button>
-                        <p class="description">
-                            La versione aggiornata è disponibile al download al seguente indirizzo:
-                            <br /><?php printf('<a href="%1$s">%1$s</a>', $update_zip_url); ?>
-                        </p>
-                    </td>
-                </tr>
-            </table>
-        </form>
-<?php   } ?>
-        <form method="post">
-            <table class="form-table">
-              <tbody>
-                <tr>
-                    <th scope="row"><label for="mql_autoupdate">Aggiorna automaticamente</label></th>
-                    <td>
-                        <input id="mql_autoupdate" name="mql[autoupdate]" type="checkbox" value="1" <?php checked($autoupdate, TRUE); ?>/>
-                        <span class="description">
-                            Abilitare questo campo per permettere al plugin di aggiornarsi autonomamente
-                            nel caso venga rilevata una nuova versione su GitHub.
-                        </span>
-                    </td>
-                </tr>
-                <tr>
-                    <th scope="row"><label for="mql_updatefreq">Frequenza di controllo</label></th>
-                    <td>
-                        <input id="mql_updatefreq" name="mql[updatefreq]" type="number" value="<?php echo $updatefreq; ?>" min="60" max="1440" />
-                        <span class="description">
-                            intervallo minimo (in minuti) fra una verifica e l'altra di possibili
-                            aggiornamenti del plugin.
-                        </span>
-                    </td>
-                </tr>
-                <tr>
-                    <th scope="row"><label for="mql_disableupdate">Disabilita controlli periodici</label></th>
-                    <td>
-                        <input id="mql_disableupdate" name="mql[disableupdate]" type="checkbox" value="1" <?php checked($disableupdate, TRUE); ?>/>
-                        <span class="description">
-                            Selezionando questa opzione, non verrà più verificata la disponibilità
-                            di una nuova versione del plugin, lasciando l'onere al webmaster.
-                        </span>
-                    </td>
-                </tr>
-              </tbody>
-            </table>
             <h2 class="title">Impostazioni network Q.Net</h2>
             <table class="form-table">
               <tbody>
@@ -335,6 +114,35 @@ function mnetqnlocal_admin_page() {
                             Selezionando questa opzione, il mini-header del network QN
                             assumerà posizione fixed e sarà sempre visibile in cima alla pagina.
                         </span>
+                    </td>
+                </tr>
+                <tr>
+                    <th scope="row"><label for="mql_fullurledit">Impedire modifica dell'URL</label></th>
+                    <td>
+                        <input id="mql_fullurledit" name="mql[fullurledit]" type="checkbox" value="1" <?php checked($fullurledit, TRUE); ?>/>
+                        <span class="description">
+                            Selezionando questa opzione, l'URL generato per un articolo non
+                            potrà essere cambiato finché tale articolo rimarrà pubblico.
+                        </span>
+                    </td>
+                </tr>
+                <tr>
+                    <th scope="row"><label for="mql_override_wtk">Parametri Webtrekk analytics</label></th>
+                    <td>
+                        <span class="description">
+                            <strong>SOLO PER ESPERTI:</strong> modificare questo campo per
+                            configurare i parametri di tracciamento Webtrekk. Lasciare vuoto
+                            perché vengano utilizzati valori di default.
+                        </span>
+                        <pre><?php
+                            echo "// proprietà modificabili:" . PHP_EOL;
+                            foreach (mql_wtk_default_properties() as $wtk_type => $wtk_values) {
+                                foreach ($wtk_values as $wtk_k => $wtk_v) {
+                                    printf('%s%s: %s' . PHP_EOL, $wtk_type, str_pad($wtk_k, 2, "0", STR_PAD_LEFT), $wtk_v);
+                                }
+                            }
+                        ?></pre>
+                        <textarea id="mql_fullurledit" name="mql[override_wtk]" cols="50" rows="4"><?php echo trim($override_wtk); ?></textarea>
                     </td>
                 </tr>
               </tbody>
