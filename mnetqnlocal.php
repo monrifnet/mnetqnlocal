@@ -123,8 +123,8 @@ function mnetqnlocal_feed_integrate() {
     if ($img_url) $enclosures["image"] = $img_url;
     $enc_str = "\n\t\t" . '<enclosure type="%s" url="%s" length="%d" />';
     foreach($enclosures as $enc_type => $enc_url) {
-        $enc_type = str_replace('"', '&#34;', $enc_type);
-        $enc_url = str_replace('"', '&#34;', $enc_url);
+        $enc_type = htmlspecialchars($enc_type);
+        $enc_url = htmlspecialchars($enc_url);
         printf($enc_str, $enc_type, $enc_url, strlen($enc_url));
     }
     echo PHP_EOL;
