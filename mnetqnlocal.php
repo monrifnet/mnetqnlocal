@@ -3,7 +3,7 @@
 Plugin Name: MonrifNet QN Local Plugin
 Plugin URI:  https://monrifnet.github.io/mnetqnlocal/
 Description: Monrif Net WordPress plugin for external site integration to Quotidiano.net
-Version:     20180223
+Version:     20200429
 Author:      Monrif Net
 Author URI:  http://www.monrif.net/
 License:     Commercial
@@ -14,7 +14,7 @@ dei fornitori.
 */
 defined('ABSPATH') or die('These violent delights have violent ends');
 
-define('MNETQNLOCAL_VER', 20180223);
+define('MNETQNLOCAL_VER', 20200429);
 define('MNETQNLOCAL_DIR', plugin_dir_path(__FILE__));
 define('MNETQNLOCAL_RES_DIR', MNETQNLOCAL_DIR . 'res/');
 define('MNETQNLOCAL_RES_URL', plugins_url('res/', __FILE__));
@@ -22,7 +22,6 @@ define('MNETQNLOCAL_RES_URL', plugins_url('res/', __FILE__));
 @include_once MNETQNLOCAL_DIR . 'admin.inc.php';
 @include_once MNETQNLOCAL_DIR . 'recaptcha.inc.php';
 @include_once MNETQNLOCAL_DIR . 'event_manager.inc.php';
-@include_once MNETQNLOCAL_DIR . 'webtrekk.inc.php';
 @include_once MNETQNLOCAL_DIR . 'amp.inc.php';
 
 global $mnetqnlocal_css, $mnetqnlocal_js;

@@ -62,59 +62,5 @@ add_action( 'amp_post_template_after_content', 'mql_amp_after_content' );
 
 function mql_amp_footer() {
     dynamic_sidebar( 'amp-footer' );
-    $wtk = mql_wtk_properties(TRUE);
-    $extra_cp_k = 11;
-    $last_cp_k = array_pop(array_keys($wtk["cp"]));
-    $extra_cp = "";
-    for ($i = $extra_cp_k; $i <= $last_cp_k; $i++) {
-        if (!array_key_exists($i, $wtk["cp"])) continue;
-        if ($i > $extra_cp_k) $extra_cp .= str_repeat(" ", 4*3);
-        $extra_cp .= sprintf('"cp%d": "%s"', $i, $wtk["cp"][$i]);
-        if ($i < $last_cp_k) $extra_cp .= "," . PHP_EOL;
-    }
-    echo <<<HereAMP
-<amp-analytics type="webtrekk">
-    <script type="application/json">
-      {
-        "transport": {"beacon": false, "xhrpost": false, "image": true},
-        "requests": {
-            "specialPageview": "\${pageview}"
-        },
-        "extraUrlParams": {
-            {$extra_cp}
-        },
-        "vars": {
-            "trackDomain": "monrifitalia01.wt-eu02.net",
-            "trackId": "754447428866385",
-            "contentId": "AMPDOC_URL"
-        },
-        "triggers": {
-            "trackPageview": {
-                "on": "visible",
-                "request": "specialPageview",
-                "vars": {
-                    "pageCategory1": "{$wtk["cg"][1]}",
-                    "pageCategory2": "{$wtk["cg"][2]}",
-                    "pageCategory3": "{$wtk["cg"][3]}",
-                    "pageCategory4": "{$wtk["cg"][4]}",
-                    "pageCategory5": "{$wtk["cg"][5]}",
-                    "pageCategory6": "{$wtk["cg"][6]}",
-                    "pageParameter1": "TITLE",
-                    "pageParameter2": "amp",
-                    "pageParameter3": "{$wtk["cp"][3]}",
-                    "pageParameter4": "{$wtk["cp"][4]}",
-                    "pageParameter5": "{$wtk["cp"][5]}",
-                    "pageParameter6": "{$wtk["cp"][6]}",
-                    "pageParameter7": "amp",
-                    "pageParameter8": "{$wtk["cp"][8]}",
-                    "pageParameter9": "{$wtk["cp"][9]}",
-                    "pageParameter10": "{$wtk["cp"][10]}"
-                }
-            }
-        }
-      }
-    </script>
-</amp-analytics>
-HereAMP;
 }
 add_action( 'amp_post_template_footer', 'mql_amp_footer' );

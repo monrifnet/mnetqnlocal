@@ -126,25 +126,6 @@ function mnetqnlocal_admin_page() {
                         </span>
                     </td>
                 </tr>
-                <tr>
-                    <th scope="row"><label for="mql_override_wtk">Parametri Webtrekk analytics</label></th>
-                    <td>
-                        <span class="description">
-                            <strong>SOLO PER ESPERTI:</strong> modificare questo campo per
-                            configurare i parametri di tracciamento Webtrekk. Lasciare vuoto
-                            perché vengano utilizzati valori di default.
-                        </span>
-                        <pre><?php
-                            echo "// proprietà modificabili:" . PHP_EOL;
-                            foreach (mql_wtk_default_properties() as $wtk_type => $wtk_values) {
-                                foreach ($wtk_values as $wtk_k => $wtk_v) {
-                                    printf('%s%s: %s' . PHP_EOL, $wtk_type, str_pad($wtk_k, 2, "0", STR_PAD_LEFT), $wtk_v);
-                                }
-                            }
-                        ?></pre>
-                        <textarea id="mql_fullurledit" name="mql[override_wtk]" cols="50" rows="4"><?php echo trim($override_wtk); ?></textarea>
-                    </td>
-                </tr>
               </tbody>
             </table>
             <p class="submit">
