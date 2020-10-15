@@ -1,6 +1,4 @@
 <?php
-    // check if we support this, e.g. on MOTORI
-    // needs follow up in critical CSS
     $mql_fixedheader = get_site_option(MNETQNLOCAL_OPT_FIXEDHEADER, FALSE);
     $mql_headerpos = $mql_fixedheader ? 'data-position="fixed"' : '';
 ?>
